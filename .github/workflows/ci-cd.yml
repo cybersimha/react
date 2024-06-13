@@ -1,15 +1,37 @@
-on: [push]
+name: CI/CD Pipeline
 
-name: AzureLoginSample
+on:
+  push:
+    branches: [ main ]  # You can adjust the branch to trigger deployment
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    runs-on: ubuntu-latest  # You can adjust the runner OS
 
-      - name: Log in with Azure
-        uses: azure/login@v1
+    steps:
+      - uses: actions/checkout@v3  # Checkout the code from GitHub
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v3
         with:
-          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          node-version: 20  # Adjust the Node.js version if needed
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the React app
+        run: npm run build  # Replace with your build command
+
+      - name: Login to Azure
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure App Service
+        uses: Azure/webapps-deploy@v2
+        with:
+          app-name: reacttest2024  # Replace with your app service name
+          resource-group: rg-dattappa-entra  # Replace with your resource group name
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          slot-name: "production"  # Optional: Deploy to a specific slot
+
